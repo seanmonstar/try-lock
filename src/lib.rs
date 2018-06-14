@@ -55,6 +55,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 ///
 /// It is only possible to try to acquire the lock, it is not possible to
 /// wait for the lock to become ready, like with a `Mutex`.
+#[derive(Default)]
 pub struct TryLock<T> {
     is_locked: AtomicBool,
     value: UnsafeCell<T>,
