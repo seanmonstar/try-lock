@@ -62,6 +62,7 @@ pub struct TryLock<T> {
 
 impl<T> TryLock<T> {
     /// Create a `TryLock` around the value.
+    #[inline]
     pub fn new(val: T) -> TryLock<T> {
         TryLock {
             is_locked: AtomicBool::new(false),
@@ -75,12 +76,40 @@ impl<T> TryLock<T> {
     /// `None`. You can try to acquire again whenever you want, perhaps
     /// by spinning a few times, or by using some other means of
     /// notification.
+    ///
+    /// # Note
+    ///
+    /// The default memory ordering is to use `Acquire` to lock, and `Release`
+    /// to unlock. If different ordering is required, use
+    /// [`try_lock_order`](TryLock::try_lock_order).
+    #[inline]
     pub fn try_lock(&self) -> Option<Locked<T>> {
-        if !self.is_locked.swap(true, Ordering::SeqCst) {
-            Some(Locked { lock: self })
+        self.try_lock_order(Ordering::Acquire, Ordering::Release)
+    }
+
+    /// Try to acquire the lock of this value using the lock and unlock orderings.
+    ///
+    /// If the lock is already acquired by someone else, this returns
+    /// `None`. You can try to acquire again whenever you want, perhaps
+    /// by spinning a few times, or by using some other means of
+    /// notification.
+    #[inline]
+    pub fn try_lock_order(&self, lock_order: Ordering, unlock_order: Ordering) -> Option<Locked<T>> {
+        if !self.is_locked.swap(true, lock_order) {
+            Some(Locked {
+                lock: self,
+                order: unlock_order,
+            })
         } else {
             None
         }
+    }
+
+    /// Take the value back out of the lock when this is the sole owner.
+    #[inline]
+    pub fn into_inner(self) -> T {
+        debug_assert!(!self.is_locked.load(Ordering::Relaxed), "TryLock was mem::forgotten");
+        self.value.into_inner()
     }
 }
 
@@ -117,24 +146,28 @@ impl<T: fmt::Debug> fmt::Debug for TryLock<T> {
 /// This type derefs to the underlying value.
 pub struct Locked<'a, T: 'a> {
     lock: &'a TryLock<T>,
+    order: Ordering,
 }
 
 impl<'a, T> Deref for Locked<'a, T> {
     type Target = T;
+    #[inline]
     fn deref(&self) -> &T {
         unsafe { &*self.lock.value.get() }
     }
 }
 
 impl<'a, T> DerefMut for Locked<'a, T> {
+    #[inline]
     fn deref_mut(&mut self) -> &mut T {
         unsafe { &mut *self.lock.value.get() }
     }
 }
 
 impl<'a, T> Drop for Locked<'a, T> {
+    #[inline]
     fn drop(&mut self) {
-        self.lock.is_locked.store(false, Ordering::SeqCst);
+        self.lock.is_locked.store(false, self.order);
     }
 }
 
