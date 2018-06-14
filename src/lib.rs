@@ -145,6 +145,7 @@ impl<T: fmt::Debug> fmt::Debug for TryLock<T> {
 /// released when this type is dropped.
 ///
 /// This type derefs to the underlying value.
+#[must_use = "TryLock will immediately unlock if not used"]
 pub struct Locked<'a, T: 'a> {
     lock: &'a TryLock<T>,
     order: Ordering,
