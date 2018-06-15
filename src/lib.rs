@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/try-lock/0.2.1")]
+#![doc(html_root_url = "https://docs.rs/try-lock/0.2.2")]
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![deny(warnings)]
