@@ -110,15 +110,7 @@ impl<T> TryLock<T> {
     #[inline]
     pub fn into_inner(self) -> T {
         debug_assert!(!self.is_locked.load(Ordering::Relaxed), "TryLock was mem::forgotten");
-        // Since the compiler can statically determine this is the only owner,
-        // it's safe to take the value out. In fact, in newer versions of Rust,
-        // `UnsafeCell::into_inner` has been marked safe.
-        //
-        // To support older version (1.21), the unsafe block is still here.
-        #[allow(unused_unsafe)]
-        unsafe {
-            self.value.into_inner()
-        }
+        self.value.into_inner()
     }
 }
 
