@@ -2,6 +2,7 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![deny(warnings)]
+#![cfg_attr(not(test), no_std)]
 
 //! A light-weight lock guarded by an atomic boolean.
 //!
@@ -43,10 +44,13 @@
 //! assert_eq!(locked2.name, "Spanner Bundle");
 //! ```
 
-use std::cell::UnsafeCell;
-use std::fmt;
-use std::ops::{Deref, DerefMut};
-use std::sync::atomic::{AtomicBool, Ordering};
+#[cfg(test)]
+extern crate core;
+
+use core::cell::UnsafeCell;
+use core::fmt;
+use core::ops::{Deref, DerefMut};
+use core::sync::atomic::{AtomicBool, Ordering};
 
 /// A light-weight lock guarded by an atomic boolean.
 ///
