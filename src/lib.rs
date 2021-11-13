@@ -68,7 +68,7 @@ pub struct TryLock<T> {
 impl<T> TryLock<T> {
     /// Create a `TryLock` around the value.
     #[inline]
-    pub fn new(val: T) -> TryLock<T> {
+    pub const fn new(val: T) -> TryLock<T> {
         TryLock {
             is_locked: AtomicBool::new(false),
             value: UnsafeCell::new(val),
