@@ -46,10 +46,13 @@
 #[cfg(test)]
 extern crate core;
 
+extern crate portable_atomic;
+
 use core::cell::UnsafeCell;
 use core::fmt;
 use core::ops::{Deref, DerefMut};
-use core::sync::atomic::{AtomicBool, Ordering};
+use portable_atomic::AtomicBool;
+use core::sync::atomic::Ordering;
 use core::marker::PhantomData;
 
 /// A light-weight lock guarded by an atomic boolean.
