@@ -46,12 +46,16 @@
 #[cfg(test)]
 extern crate core;
 
+#[cfg(feature = "portable-atomic")]
 extern crate portable_atomic;
 
 use core::cell::UnsafeCell;
 use core::fmt;
 use core::ops::{Deref, DerefMut};
+#[cfg(feature = "portable-atomic")]
 use portable_atomic::AtomicBool;
+#[cfg(not(feature = "portable-atomic"))]
+use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 use core::marker::PhantomData;
 
