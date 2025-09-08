@@ -89,7 +89,7 @@ impl<T> TryLock<T> {
     /// [`try_lock_explicit`](TryLock::try_lock_explicit) or
     /// [`try_lock_explicit_unchecked`](TryLock::try_lock_explicit_unchecked).
     #[inline]
-    pub fn try_lock(&self) -> Option<Locked<T>> {
+    pub fn try_lock(&self) -> Option<Locked<'_, T>> {
         unsafe {
             self.try_lock_explicit_unchecked(Ordering::Acquire, Ordering::Release)
         }
@@ -107,7 +107,7 @@ impl<T> TryLock<T> {
         note = "This method is actually unsafe because it unsafely allows \
         the use of weaker memory ordering. Please use try_lock_explicit instead"
     )]
-    pub fn try_lock_order(&self, lock_order: Ordering, unlock_order: Ordering) -> Option<Locked<T>> {
+    pub fn try_lock_order(&self, lock_order: Ordering, unlock_order: Ordering) -> Option<Locked<'_, T>> {
         unsafe {
             self.try_lock_explicit_unchecked(lock_order, unlock_order)
         }
@@ -126,7 +126,7 @@ impl<T> TryLock<T> {
     /// This method panics if `lock_order` is not any of `Acquire`, `AcqRel`,
     /// and `SeqCst`, or `unlock_order` is not any of `Release` and `SeqCst`.
     #[inline]
-    pub fn try_lock_explicit(&self, lock_order: Ordering, unlock_order: Ordering) -> Option<Locked<T>> {
+    pub fn try_lock_explicit(&self, lock_order: Ordering, unlock_order: Ordering) -> Option<Locked<'_, T>> {
         match lock_order {
             Ordering::Acquire |
             Ordering::AcqRel |
@@ -162,7 +162,7 @@ impl<T> TryLock<T> {
     ///
     /// [`try_lock_explicit`]: Self::try_lock_explicit
     #[inline]
-    pub unsafe fn try_lock_explicit_unchecked(&self, lock_order: Ordering, unlock_order: Ordering) -> Option<Locked<T>> {
+    pub unsafe fn try_lock_explicit_unchecked(&self, lock_order: Ordering, unlock_order: Ordering) -> Option<Locked<'_, T>> {
         if !self.is_locked.swap(true, lock_order) {
             Some(Locked {
                 lock: self,
